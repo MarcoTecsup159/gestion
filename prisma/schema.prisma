@@ -7,11 +7,18 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  products  Product[] 
+}
+
 model Product {
   id        Int      @id @default(autoincrement())
   name      String
   price     Float
-  category  String
+  category  Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
   stock     Int
   createdAt DateTime @default(now())
 }

@@ -5,30 +5,30 @@ export default function ProductModal({
   onClose,
   onSubmit,
   initialData,
-  categories = [],
+  categories
 }) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [stock, setStock] = useState("");
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name || "");
       setPrice(initialData.price || "");
-      setCategory(initialData.category || "");
+      setCategory(initialData.categoryId || "");
       setStock(initialData.stock || "");
     } else {
       setName("");
       setPrice("");
-      setCategory("");
+      setCategoryId("");
       setStock("");
     }
   }, [initialData, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !price || !category || stock === "") {
+    if (!name || !price || !categoryId || stock === "") {
       alert("Por favor completa todos los campos");
       return;
     }
@@ -37,7 +37,7 @@ export default function ProductModal({
       id: initialData?.id,
       name,
       price: parseFloat(price),
-      category,
+      categoryId: parseInt(categoryId),
       stock: parseInt(stock),
     });
   };
@@ -115,12 +115,12 @@ export default function ProductModal({
             </label>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
             >
               <option value="">Selecciona una categoría</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
+                <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
               ))}

@@ -1,5 +1,4 @@
-// src/pages/login.js
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 export default function Login() {

@@ -24,12 +24,9 @@ export default function ProductsPage() {
   };
 
   const fetchCategories = async () => {
-    // Por ahora simulado, lo reemplazarás con un fetch real
-    setCategories([
-      { id: 1, name: "Electrónica" },
-      { id: 2, name: "Ropa" },
-      { id: 3, name: "Alimentos" },
-    ]);
+    const res = await fetch("/api/categories");
+    const data = await res.json();
+    setCategories(data);
   };
 
   const handleCreate = () => {
