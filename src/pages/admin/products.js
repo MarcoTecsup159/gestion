@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import ProductTable from "@/components/ProductTable";
 import ProductModal from "@/components/ProductModal";
@@ -11,14 +11,23 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
   }, []);
 
-  const fetchProducts = async () => {
-    const res = await fetch("/api/products");
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      fetchProducts(search);
+    }, 300); // Espera 300ms después de que el usuario deje de escribir
+
+    return () => clearTimeout(delayDebounce); // Limpia el timeout si el componente se desmonta o cambia
+  }, [search]);
+
+  const fetchProducts = async (searchTerm = "") => {
+    const res = await fetch(`/api/products?search=${encodeURIComponent(searchTerm)}`);
     const data = await res.json();
     setProducts(data);
   };
@@ -53,7 +62,7 @@ export default function ProductsPage() {
       body: JSON.stringify(product),
     });
     setIsProductModalOpen(false);
-    fetchProducts();
+    fetchProducts(search);
   };
 
   const handleDeleteConfirmed = async (id) => {
@@ -61,7 +70,7 @@ export default function ProductsPage() {
       method: "DELETE",
     });
     setIsDeleteModalOpen(false);
-    fetchProducts();
+    fetchProducts(search);
   };
 
   return (
@@ -82,6 +91,52 @@ export default function ProductsPage() {
             </svg>
             Nuevo producto
           </button>
+        </div>
+        <div className="mb-6 relative max-w-md mx-auto text-gray-600">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 shadow-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                <svg
+                  className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Tabla de productos con mejor espaciado */}

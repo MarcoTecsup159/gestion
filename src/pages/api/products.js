@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         const { search, categoryId } = req.query;
         let where = {};
         if (search) {
-            where.name = { contains: search, mode: "insensitive" };
+            where.name = { contains: search };
         }
         if (categoryId) {
             where.categoryId = categoryId;
