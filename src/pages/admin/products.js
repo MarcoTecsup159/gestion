@@ -12,6 +12,7 @@ export default function ProductsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState(null);
   const [search, setSearch] = useState("");
+  const [filterCategoryId, setFilterCategoryId] = useState("");
 
   useEffect(() => {
     fetchProducts();
@@ -20,14 +21,18 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      fetchProducts(search);
+      fetchProducts(search, filterCategoryId);
     }, 300); // Espera 300ms después de que el usuario deje de escribir
 
     return () => clearTimeout(delayDebounce); // Limpia el timeout si el componente se desmonta o cambia
-  }, [search]);
+  }, [search, filterCategoryId]);
 
-  const fetchProducts = async (searchTerm = "") => {
-    const res = await fetch(`/api/products?search=${encodeURIComponent(searchTerm)}`);
+  const fetchProducts = async (searchTerm = "", categoryId = "") => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.append("search", searchTerm);
+    if (categoryId) params.append("category", categoryId);
+
+    const res = await fetch(`/api/products?${params.toString()}`);
     const data = await res.json();
     setProducts(data);
   };
@@ -62,7 +67,7 @@ export default function ProductsPage() {
       body: JSON.stringify(product),
     });
     setIsProductModalOpen(false);
-    fetchProducts(search);
+    fetchProducts(search, filterCategoryId);
   };
 
   const handleDeleteConfirmed = async (id) => {
@@ -70,7 +75,7 @@ export default function ProductsPage() {
       method: "DELETE",
     });
     setIsDeleteModalOpen(false);
-    fetchProducts(search);
+    fetchProducts(search, filterCategoryId);
   };
 
   return (
@@ -92,52 +97,45 @@ export default function ProductsPage() {
             Nuevo producto
           </button>
         </div>
-        <div className="mb-6 relative max-w-md mx-auto text-gray-600">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 text-gray-600">
+          {/* Input de búsqueda */}
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <input
               type="text"
               placeholder="Buscar productos..."
-              className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 shadow-sm"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg
-                className="h-5 w-5 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+          </div>
+
+          {/* Selector de categorías */}
+          <div className="relative flex-shrink-0 sm:w-64">
+            <select
+              className="w-full pl-3 pr-10 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 appearance-none outline-none bg-white cursor-pointer"
+              value={filterCategoryId}
+              onChange={(e) => setFilterCategoryId(e.target.value)}
+            >
+              <option value="">Todas las categorías</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              >
-                <svg
-                  className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            )}
           </div>
         </div>
+
 
         {/* Tabla de productos con mejor espaciado */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

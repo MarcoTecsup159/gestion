@@ -1,16 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import { parse } from "path";
 
 const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
     if (req.method === "GET") {
-        const { search, categoryId } = req.query;
+        const { search, category } = req.query;
         let where = {};
         if (search) {
             where.name = { contains: search };
         }
-        if (categoryId) {
-            where.categoryId = categoryId;
+        if (category) {
+            where.categoryId = parseInt(category);
         }
 
         const products = await prisma.product.findMany({ where, include: { category: true } });
